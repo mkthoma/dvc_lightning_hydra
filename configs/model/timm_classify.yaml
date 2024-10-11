@@ -1,0 +1,19 @@
+_target_: src.models.timm_classifier.TimmClassifier
+
+# Model parameters
+model_name: resnet50
+num_classes: 10
+pretrained: true
+
+# Optimizer parameters
+lr: 1e-3
+optimizer: Adam
+optimizer_params:
+  weight_decay: 1e-5
+
+# Scheduler parameters
+scheduler: ReduceLROnPlateau
+scheduler_params:
+  factor: 0.1
+  patience: 5
+  verbose: true

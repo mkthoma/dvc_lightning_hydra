@@ -1,0 +1,106 @@
+name: Train Dogbreed Model
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/train_dogbreed_model.yml'
+      - 'Dockerfile'
+      - 'src/**'
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  train_model:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: false
+        load: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+    - name: Inspect Docker container
+      run: |
+        docker run --rm --entrypoint sh ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} -c "ls -R /app"
+
+    - name: Train model
+      run: |
+        docker run --name trainer \
+          -v ${{ github.workspace }}/logs:/app/logs \
+          -v ${{ github.workspace }}/data:/app/data \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+          /app/src/train.py trainer.max_epochs=5
+
+    - name: Check model accuracy
+      run: |
+        accuracy=$(grep -oP 'test/acc: \K[0-9.]+' logs/train/runs/*/train.log | tail -1)
+        if (( $(echo "$accuracy < 0.95" | bc -l) )); then
+          echo "Model accuracy is below 95%: $accuracy"
+          exit 1
+        else
+          echo "Model accuracy is above 95%: $accuracy"
+        fi
+
+    - name: Set permissions for logs directory
+      run: sudo chown -R $USER:$USER ${{ github.workspace }}/logs
+
+    - name: Upload model checkpoint
+      uses: actions/upload-artifact@v3
+      with:
+        name: model-checkpoint
+        path: logs/train/runs/*/checkpoints/*.ckpt
+        if-no-files-found: error
+
+    - name: Upload model logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: model-logs
+        path: logs/train/runs/*/train.log
+        if-no-files-found: error
+
+    - name: Debug - List contents of logs directory
+      run: |
+        echo "Contents of logs directory:"
+        ls -R logs/
+
+    - name: Upload config
+      uses: actions/upload-artifact@v3
+      with:
+        name: model-config
+        path: logs/train/runs/*/csv/version_0/hparams.yaml
+        if-no-files-found: error
+
+    - name: Upload tensorboard logs
+      uses: actions/upload-artifact@v3
+      with:
+        name: tensorboard-logs
+        path: logs/train/runs/*/tensorboard
+        if-no-files-found: error
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: logs/train/runs/*/test_results.pt
+        if-no-files-found: error
+
+    - name: Print success message
+      run: echo "Model training completed successfully. Artifacts have been uploaded."

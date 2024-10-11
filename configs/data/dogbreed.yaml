@@ -1,0 +1,14 @@
+_target_: src.datamodules.dogbreed.DogBreedImageDataModule
+
+data_dir: ${paths.data_dir}/dogbreed
+num_workers: 0
+batch_size: 32
+train_val_test_split: [0.8, 0.1, 0.1]
+pin_memory: False
+dataset_name: "khushikhushikhushi/dog-breed-image-dataset"
+image_size: [224, 224]
+augmentation:
+  horizontal_flip: True
+normalization:
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]

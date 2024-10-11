@@ -1,0 +1,38 @@
+# @package _global_
+
+# specify here default configuration
+# order of defaults determines the order in which configs override each other
+defaults:
+  - _self_
+  - data: dogbreed
+  - model: timm_classify
+  - callbacks: default
+  - logger: default
+  - trainer: default
+  - paths: default
+  - hydra: default
+
+  # experiment configs allow for version control of specific hyperparameters
+  # e.g. best hyperparameters for given model and datamodule
+  - experiment: dogbreed_experiment
+
+  # debugging config (enable through command line, e.g. `python eval.py debug=default)
+  - debug: null
+
+# task name, determines output directory path
+task_name: "eval"
+
+# task name for train.yaml. used for loading the best checkpoint
+train_task_name: "train"
+
+# tags to help you identify your experiments
+# you can overwrite this in experiment configs
+# overwrite from command line with `python eval.py tags="[first_tag, second_tag]"`
+tags: ["dogbreed", "evaluation"]
+
+# seed for random number generators in pytorch, numpy and python.random
+seed: null
+
+# path to the checkpoint file to use for evaluation
+# if null, the script will attempt to use the best checkpoint from training
+ckpt_path: null

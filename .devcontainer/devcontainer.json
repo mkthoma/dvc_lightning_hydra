@@ -1,0 +1,15 @@
+{
+	"name": "Dog Breed Classifier",
+	"build": {
+		"dockerfile": "../Dockerfile",
+		"context": ".."
+	},
+	"customizations": {
+		"vscode": {
+			"settings": {},
+			"extensions": [
+				"ms-python.python"
+			]
+		}
+	}
+}
