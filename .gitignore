@@ -1,15 +1,2 @@
 data/
 .venv/
-
-
-dvc remote modify gdrive gdrive_client_id '355606304160-g66u5hefh8lesp51bvpfst9tcjv94vfn.apps.googleusercontent.com'
-dvc remote modify gdrive gdrive_client_secret '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'
-
-
-
-
-dvc remote modify gdrive gdrive_client_id ${DVC_GDRIVE_CLIENT_ID}
-dvc remote modify gdrive gdrive_client_secret ${DVC_GDRIVE_CLIENT_SECRET}
-
-export DVC_GDRIVE_CLIENT_ID=355606304160-0nrjltqco77ltbj4pne2pjk75s16qc8v.apps.googleusercontent.com
-export DVC_GDRIVE_CLIENT_SECRET=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
