@@ -112,9 +112,8 @@ jobs:
         echo "### Inference Results" >> report.md
         echo "Sample predictions from the trained model:" >> report.md
         for image in ./model_artifacts/predicted_images/*.png; do
-          echo '![Prediction](${image})'' >> report.md
+          echo '![Prediction: ](${image})'' >> report.md
         done
-
         cml comment create report.md
 
     - name: Upload artifacts
