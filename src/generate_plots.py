@@ -22,6 +22,8 @@ def parse_log(log_file_path):
             # Remove tensor() wrappers and convert to a valid JSON format
             cleaned_metrics_str = re.sub(r'tensor\(([\d.]+)\)', r'\1', train_metrics_str)
             cleaned_metrics_str = cleaned_metrics_str.replace("'", '"')  # Replace single quotes with double quotes
+            # Ensure all numbers are properly formatted
+            cleaned_metrics_str = re.sub(r'(?<=\d)\.(?=\s*[,}])', '', cleaned_metrics_str)  # Remove trailing dots
             train_metrics = json.loads(cleaned_metrics_str)
             
             metrics['val_loss'] = float(train_metrics['val/loss'])
