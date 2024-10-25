@@ -86,6 +86,10 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
             /app/src/infer.py
 
+    - name: Install CML
+      run: |
+        npm install -g @dvcorg/cml
+
     - name: Update CML report with inference results
       env:
         REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
