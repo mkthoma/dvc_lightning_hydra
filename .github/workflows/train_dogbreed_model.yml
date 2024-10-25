@@ -58,6 +58,9 @@ jobs:
     - name: Set permissions for logs directory
       run: sudo chown -R $USER:$USER ${{ github.workspace }}/logs
 
+    - name: Set permissions for model artifacts directory
+      run: sudo chown -R $USER:$USER ${{ github.workspace }}/model_artifacts
+
     - name: Upload model checkpoint
       uses: actions/upload-artifact@v3
       with:
