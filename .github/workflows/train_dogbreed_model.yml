@@ -74,11 +74,12 @@ jobs:
 
     - name: Generate plots
       run: |
+        LOG_FILE=$(find /app/logs/train/runs -name "train.log" | head -n 1)
         docker run --rm \
           -v ${{ github.workspace }}/logs:/app/logs \
           -v ${{ github.workspace }}/src:/app/src \
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-            /app/src/generate_plots.py --log_file_path /app/logs/train/runs/*/train.log
+            /app/src/generate_plots.py --log_file_path $LOG_FILE
 
     - name: Run inference on test images
       run: |
