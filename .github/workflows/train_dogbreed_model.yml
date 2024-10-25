@@ -74,7 +74,9 @@ jobs:
 
     - name: Generate plots
       run: |
-        LOG_FILE=$(find /app/logs/train/runs -name "train.log" | head -n 1)
+        RUN_DIR=$(find /app/logs/train/runs -mindepth 1 -maxdepth 1 -type d | head -n 1)
+        LOG_FILE="$RUN_DIR/train.log"
+        echo "Log file path: $LOG_FILE"
         docker run --rm \
           -v ${{ github.workspace }}/logs:/app/logs \
           -v ${{ github.workspace }}/src:/app/src \
