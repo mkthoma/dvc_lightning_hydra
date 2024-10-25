@@ -24,9 +24,6 @@ jobs:
       with:
         python-version: '3.8'
 
-    - name: Set up DVC
-      uses: iterative/setup-dvc@v1
-
     - name: Log in to the Container registry
       uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
       with:
@@ -51,13 +48,12 @@ jobs:
 
     - name: Train model
       run: |
-        dvc repro train
         docker run --name trainer \
           -v ${{ github.workspace }}/logs:/app/logs \
           -v ${{ github.workspace }}/data:/app/data \
           -e COMET_API_KEY=${{ secrets.COMET_API_KEY }} \
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-          /app/src/train.py trainer.max_epochs=5
+          python /app/src/train.py trainer.max_epochs=5
 
     - name: Set permissions for logs directory
       run: sudo chown -R $USER:$USER ${{ github.workspace }}/logs

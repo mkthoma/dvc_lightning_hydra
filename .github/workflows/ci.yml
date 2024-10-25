@@ -38,6 +38,10 @@ jobs:
         echo "{\"username\":\"${KAGGLE_USERNAME}\",\"key\":\"${KAGGLE_KEY}\"}" > ~/.kaggle/kaggle.json
         chmod 600 ~/.kaggle/kaggle.json
 
+    - name: Set up Comet ML
+      run: |
+        echo "COMET_API_KEY=${{ secrets.COMET_API_KEY }}" >> $GITHUB_ENV
+
     - name: Run tests with coverage
       run: |
         uv run pytest --cov --cov-report=xml
