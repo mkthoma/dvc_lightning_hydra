@@ -65,13 +65,6 @@ jobs:
         path: logs/train/runs/*/checkpoints/*.ckpt
         if-no-files-found: error
 
-    - name: Inspect Docker container
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}/logs:/app/logs \
-          --entrypoint sh ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-          -c "ls -R /app"
-
     - name: Generate plots
       run: |
         LOG_FILE=$(find ${{ github.workspace }}/logs/train/runs -name train.log)
@@ -87,7 +80,11 @@ jobs:
 
     - name: Run inference on test images
       run: |
-        python src/infer.py
+        docker run --rm \
+          -v ${{ github.workspace }}/src:/app/src \
+          -v ${{ github.workspace }}/model_artifacts:/app/model_artifacts \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            /app/src/infer.py
 
     - name: Update CML report with inference results
       env:
