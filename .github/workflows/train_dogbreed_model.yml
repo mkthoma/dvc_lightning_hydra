@@ -101,7 +101,7 @@ jobs:
         for img in ${{ github.workspace }}/model_artifacts/predicted_images/*.jpg; do
           echo "![inline]($img)" >> report.md
         done
-        cml-send-comment report.md
+        cml comment create report.md
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
