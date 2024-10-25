@@ -2,5 +2,5 @@ data/
 .venv/
 .comet.config
 logs/
-
+model_artifacts/predicted_images/
 /data
