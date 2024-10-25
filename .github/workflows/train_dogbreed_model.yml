@@ -90,7 +90,7 @@ jobs:
             /app/src/infer.py
 
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v4
+      uses: peter-evans/create-pull-request@v7.0.5
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: Add model training results
