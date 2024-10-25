@@ -102,8 +102,10 @@ jobs:
         echo "![inline](${{ github.workspace }}/logs/plots/metrics_comparison.png)" >> report.md
         echo "### Inference Results" >> report.md
         for img in ${{ github.workspace }}/model_artifacts/predicted_images/*.jpg; do
+          echo "Adding image: $img"  # Debugging line
           echo "![inline]($img)" >> report.md
         done
+        cat report.md  # Debugging line to print the report content
         cml comment create report.md
 
     - name: Upload artifacts
