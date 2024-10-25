@@ -1,6 +1,6 @@
-# Dog Breed Classifier using PyTorch Lightning, Hydra and Docker
+# Dog Breed Classifier using DVC, CometML, PyTorch Lightning, Hydra and Docker
 
-This project is a dog breed classifier that uses PyTorch Lightning, Hydra and Docker. It is a simple example of how to use these technologies to build a machine learning model. It is not meant to be a production-ready application.
+This project is a dog breed classifier that uses DVC, CometML, PyTorch Lightning, Hydra and Docker. It is a simple example of how to use these technologies to build a machine learning model. It is not meant to be a production-ready application. It is simply a showcase of how to use these technologies together.
 
 It is an adaptation of the [my earlier repository](https://github.com/mkthoma/pytorch_lightning_docker) to showcase the use of Hydra for configuration management and Docker for containerization.
 
@@ -21,6 +21,9 @@ Before you start, make sure you have the following:
     echo 'export KAGGLE_USERNAME="your_username"' >> ~/.bashrc
     echo 'export KAGGLE_KEY="your_api_key"' >> ~/.bashrc
     source ~/.bashrc
+    ```
+5.  ```
+    export COMET_API_KEY="your_api_key"
     ```
 
 ## Docker commands
@@ -183,7 +186,3 @@ rsync -av --exclude='data' --exclude='.venv' --exclude='logs' --exclude='dvc_com
 
 dvc remote modify gdrive --local gdrive_service_account_json_file_path gdrive_service.json
 
-export ENV COMET_API_KEY="eEjP6IDKxxj3hP4gJgPwAQzvI"
-
-
-src/generate_plots.py --log_file logs/train/runs/2024-10-24_06-51-01/train.log

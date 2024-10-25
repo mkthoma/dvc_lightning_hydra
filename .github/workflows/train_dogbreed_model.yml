@@ -1,94 +1,107 @@
-# name: Train Dogbreed Model
+name: Train Dogbreed Model
 
-# on:
-#   push:
-#     branches: [ main ]
-#     paths:
-#       - '.github/workflows/train_dogbreed_model.yml'
-#       - 'Dockerfile'
-#       - 'src/**'
-# env:
-#   REGISTRY: ghcr.io
-#   IMAGE_NAME: ${{ github.repository }}
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '.github/workflows/train_dogbreed_model.yml'
+      - 'Dockerfile'
+      - 'src/**'
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
-# jobs:
-#   train_model:
-#     runs-on: ubuntu-latest
+jobs:
+  train_model:
+    runs-on: ubuntu-latest
     
-#     steps:
-#     - name: Checkout code
-#       uses: actions/checkout@v4
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-#     - name: Set up Python
-#       uses: actions/setup-python@v4
-#       with:
-#         python-version: '3.8'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.8'
 
-#     - name: Set up DVC
-#       uses: iterative/setup-dvc@v1
+    - name: Set up DVC
+      uses: iterative/setup-dvc@v1
 
-#     - name: Log in to the Container registry
-#       uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-#       with:
-#         registry: ${{ env.REGISTRY }}
-#         username: ${{ github.actor }}
-#         password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Log in to the Container registry
+      uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
-#     - name: Set up Docker Buildx
-#       uses: docker/setup-buildx-action@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
 
-#     - name: Build Docker image
-#       uses: docker/build-push-action@v4
-#       with:
-#         context: .
-#         push: false
-#         load: true
-#         tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+    - name: Build Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: false
+        load: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-#     - name: Set up Comet ML
-#       run: |
-#         echo "COMET_API_KEY=${{ secrets.COMET_API_KEY }}" >> $GITHUB_ENV
+    - name: Set up Comet ML
+      run: |
+        echo "COMET_API_KEY=${{ secrets.COMET_API_KEY }}" >> $GITHUB_ENV
 
-#     - name: Train model
-#       run: |
-#         dvc repro train
-#         docker run --name trainer \
-#           -v ${{ github.workspace }}/logs:/app/logs \
-#           -v ${{ github.workspace }}/data:/app/data \
-#           -e COMET_API_KEY=${{ secrets.COMET_API_KEY }} \
-#           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-#           /app/src/train.py trainer.max_epochs=5
+    - name: Train model
+      run: |
+        dvc repro train
+        docker run --name trainer \
+          -v ${{ github.workspace }}/logs:/app/logs \
+          -v ${{ github.workspace }}/data:/app/data \
+          -e COMET_API_KEY=${{ secrets.COMET_API_KEY }} \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+          /app/src/train.py trainer.max_epochs=5
 
-#     - name: Set permissions for logs directory
-#       run: sudo chown -R $USER:$USER ${{ github.workspace }}/logs
+    - name: Set permissions for logs directory
+      run: sudo chown -R $USER:$USER ${{ github.workspace }}/logs
 
-#     - name: Upload model checkpoint
-#       uses: actions/upload-artifact@v3
-#       with:
-#         name: model-checkpoint
-#         path: logs/train/runs/*/checkpoints/*.ckpt
-#         if-no-files-found: error
+    - name: Upload model checkpoint
+      uses: actions/upload-artifact@v3
+      with:
+        name: model-checkpoint
+        path: logs/train/runs/*/checkpoints/*.ckpt
+        if-no-files-found: error
 
-#     - name: Generate plots
-#       run: |
-#         python src/generate_plots.py --log_file /app/logs/train/runs/*/train.log
+    - name: Generate plots
+      run: |
+        python src/generate_plots.py --log_file /app/logs/train/runs/*/train.log
 
-#     - name: Create CML report
-#       env:
-#         REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#       run: |
-#         echo "## Model Training Results" >> report.md
-#         echo "### Performance Metrics" >> report.md
-#         cml-publish /app/logs/plots/metrics_comparison.png --md >> report.md
-#         cml-send-comment report.md
+    - name: Run inference on test images
+      run: |
+        mkdir -p ${{ github.workspace }}/model_artifacts/input_images
+        mkdir -p ${{ github.workspace }}/model_artifacts/predicted_images
+        cp $(ls ${{ github.workspace }}/data/test/*.jpg | shuf -n 10) ${{ github.workspace }}/model_artifacts/input_images/
+        python src/infer.py
 
-#     - name: Upload artifacts
-#       uses: actions/upload-artifact@v3
-#       with:
-#         name: model-training-metrics
-#         path: |
-#           /app/logs/plots/metrics_comparison.png
-#         if-no-files-found: error
+    - name: Update CML report with inference results
+      env:
+        REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "## Model Training Results" >> report.md
+        echo "### Performance Metrics" >> report.md
+        cml-publish /app/logs/plots/metrics_comparison.png --md >> report.md
+        echo "### Inference Results" >> report.md
+        for img in ${{ github.workspace }}/model_artifacts/predicted_images/*.jpg; do
+          cml-publish $img --md >> report.md
+        done
+        cml-send-comment report.md
 
-#     - name: Print success message
-#       run: echo "Model training completed successfully. Artifacts have been uploaded."
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: model-training-artifacts
+        path: |
+          /app/logs/plots/metrics_comparison.png
+          ${{ github.workspace }}/model_artifacts/predicted_images/*.jpg
+          report.md
+        if-no-files-found: error
+
+    - name: Print success message
+      run: echo "Model training and inference completed successfully. Artifacts have been uploaded."
