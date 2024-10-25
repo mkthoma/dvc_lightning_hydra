@@ -65,6 +65,14 @@ jobs:
         path: logs/train/runs/*/checkpoints/*.ckpt
         if-no-files-found: error
 
+    - name: Inspect Docker container
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}/logs:/app/logs \
+          -v ${{ github.workspace }}/data:/app/data \
+          --entrypoint sh ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+          -c "ls -R /app"
+
     - name: Generate plots
       run: |
         docker run --rm \
