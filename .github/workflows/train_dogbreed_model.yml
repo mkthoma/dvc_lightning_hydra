@@ -99,9 +99,9 @@ jobs:
       run: |
         echo "## Model Training Results" >> report.md
         echo "### Performance Metrics" >> report.md
-        echo "![inline](logs/plots/metrics_comparison.png)" >> report.md
+        echo "![inline](./logs/plots/metrics_comparison.png)" >> report.md
         echo "### Inference Results" >> report.md
-        for img in model_artifacts/predicted_images/*.jpg; do
+        for img in ./model_artifacts/predicted_images/*.jpg; do
           echo "Adding image: $img"  # Debugging line
           echo "![inline]($img)" >> report.md
         done
