@@ -46,14 +46,6 @@ jobs:
       run: |
         echo "COMET_API_KEY=${{ secrets.COMET_API_KEY }}" >> $GITHUB_ENV
 
-    - name: Debug - List directory contents
-      run: |
-        docker run --rm \
-          -v ${{ github.workspace }}/logs:/app/logs \
-          -v ${{ github.workspace }}/data:/app/data \
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-          ls -R /app
-
     - name: Train model
       run: |
         docker run --name trainer \
@@ -61,7 +53,7 @@ jobs:
           -v ${{ github.workspace }}/data:/app/data \
           -e COMET_API_KEY=${{ secrets.COMET_API_KEY }} \
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-          python /app/src/train.py trainer.max_epochs=5
+            /app/src/train.py trainer.max_epochs=5
 
     - name: Set permissions for logs directory
       run: sudo chown -R $USER:$USER ${{ github.workspace }}/logs
