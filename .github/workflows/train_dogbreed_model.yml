@@ -69,7 +69,6 @@ jobs:
       run: |
         docker run --rm \
           -v ${{ github.workspace }}/logs:/app/logs \
-          -v ${{ github.workspace }}/data:/app/data \
           --entrypoint sh ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
           -c "ls -R /app"
 
