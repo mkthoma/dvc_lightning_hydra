@@ -89,15 +89,6 @@ jobs:
           ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
             /app/src/infer.py
 
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v7.0.5
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: Add model training results
-        branch: feature/model-training-results
-        title: 'Add model training results'
-        body: 'This PR includes the latest model training results and updates.'
-
     - name: Install CML
       run: |
         npm install -g @dvcorg/cml
@@ -114,7 +105,22 @@ jobs:
         for image in ./model_artifacts/predicted_images/*.png; do
           echo '![Prediction: ](${image})'' >> report.md
         done
-        cml comment create report.md
+
+    - name: Delete untracked files from predicted_images
+      run: |
+        git clean -fdx model_artifacts/predicted_images
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v7.0.5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: Add model training results
+        branch: feature/model-training-results
+        title: 'Add model training results'
+        body: 'This PR includes the latest model training results and updates.'
+
+    - name: Comment on Pull Request
+      run: cml comment create report.md
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
