@@ -87,9 +87,6 @@ jobs:
 
     - name: Run inference on test images
       run: |
-        mkdir -p ${{ github.workspace }}/model_artifacts/input_images
-        mkdir -p ${{ github.workspace }}/model_artifacts/predicted_images
-        cp $(ls ${{ github.workspace }}/data/test/*.jpg | shuf -n 10) ${{ github.workspace }}/model_artifacts/input_images/
         python src/infer.py
 
     - name: Update CML report with inference results
@@ -98,7 +95,7 @@ jobs:
       run: |
         echo "## Model Training Results" >> report.md
         echo "### Performance Metrics" >> report.md
-        cml-publish /app/logs/plots/metrics_comparison.png --md >> report.md
+        cml-publish /app/logs/plots/plots/metrics_comparison.png --md >> report.md
         echo "### Inference Results" >> report.md
         for img in ${{ github.workspace }}/model_artifacts/predicted_images/*.jpg; do
           cml-publish $img --md >> report.md
