@@ -175,3 +175,15 @@ To access these artifacts:
 4. Download the desired artifact.
 
 This approach ensures that all important model-related files are preserved and easily accessible for further analysis or deployment.
+
+
+rsync -av --exclude='data' --exclude='.venv' --exclude='logs' --exclude='dvc_comet_latest' ./ ./dvc_comet_latest/
+
+
+
+dvc remote modify gdrive --local gdrive_service_account_json_file_path gdrive_service.json
+
+export ENV COMET_API_KEY="eEjP6IDKxxj3hP4gJgPwAQzvI"
+
+
+src/generate_plots.py --log_file logs/train/runs/2024-10-24_06-51-01/train.log

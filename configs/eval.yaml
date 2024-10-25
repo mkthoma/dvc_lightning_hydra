@@ -14,7 +14,7 @@ defaults:
 
   # experiment configs allow for version control of specific hyperparameters
   # e.g. best hyperparameters for given model and datamodule
-  - experiment: dogbreed_experiment
+  - experiment: dogbreed_eval_experiment
 
   # debugging config (enable through command line, e.g. `python eval.py debug=default)
   - debug: null

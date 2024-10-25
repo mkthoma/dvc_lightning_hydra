@@ -49,3 +49,5 @@ callbacks:
 logger:
   tensorboard:
     name: "dogbreed_experiment"
+  comet:
+    experiment_name: "dogbreed evaluation experiment"

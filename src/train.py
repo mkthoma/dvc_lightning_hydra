@@ -1,15 +1,17 @@
 import os
 from pathlib import Path
 import logging
-
+import comet_ml
+from comet_ml import Experiment, API
 import hydra
 from omegaconf import DictConfig
 import lightning as L
 from lightning.pytorch.loggers import Logger
 from typing import List
 import torch
-
 import rootutils
+from datetime import timedelta, datetime
+import pytz
 
 # Setup root directory
 root = rootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
@@ -102,6 +104,18 @@ def main(cfg: DictConfig) -> None:
         logger=loggers,
     )
 
+    # Initialize Comet ML experiment
+    if "comet" in cfg.logger:
+        experiment = Experiment(
+            api_key=os.environ.get("COMET_API_KEY"),
+            project_name=cfg.logger.comet.project_name,
+            auto_output_logging="simple",
+        )
+        experiment.log_parameters(cfg)
+
+        # Get the latest experiment
+        api = API(api_key=os.environ.get("COMET_API_KEY"))
+
     # Train the model
     if cfg.get("train", True):
         run_train(cfg, trainer, model, datamodule)
@@ -110,5 +124,47 @@ def main(cfg: DictConfig) -> None:
     if cfg.get("test", False):
         run_test(cfg, trainer, model, datamodule)
 
+    # If Comet ML is used, save the URL and make the experiment public
+    if "comet" in cfg.logger:
+        # Make the experiment public
+        api = comet_ml.API()
+        api.update_project(cfg.logger.comet.workspace, cfg.logger.comet.project_name, public=True)
+
+        experiments = api.get_experiments(
+            workspace=cfg.logger.comet.workspace,
+            project_name=cfg.logger.comet.project_name
+        )
+        
+        if experiments:
+            latest_experiment = experiments[-1]  # The last experiment in the list
+            experiment_url = latest_experiment.url
+        else:
+            experiment_url = experiment.url  # Fallback to current experiment URL if no experiments found
+        
+        # Create the directory if it doesn't exist
+        os.makedirs(os.path.dirname(cfg.paths.comet_experiment_url), exist_ok=True)
+        
+        # Save the URL to a file
+        url_file_path = os.path.join(cfg.paths.comet_experiment_url, "train_experiment_url.txt")
+
+        # Get the current time in UTC
+        current_time_utc = datetime.now(pytz.UTC)
+        
+        # Convert to IST
+        ist_tz = pytz.timezone('Asia/Kolkata')
+        current_time_ist = current_time_utc.astimezone(ist_tz)
+        
+        # Format the IST time as a string
+        current_time_ist_str = current_time_ist.strftime("%Y-%m-%d %H:%M:%S %Z")
+
+        with open(url_file_path, "a") as url_file:
+            url_file.write(f"{current_time_ist_str}: {experiment_url}{os.linesep}")
+        
+        log.info(f"Comet ML experiment URL saved to: {url_file_path}")
+        log.info(f"Experiment URL: {experiment_url}")
+
+    log.info("Training pipeline completed.")
+
 if __name__ == "__main__":
     main()
+

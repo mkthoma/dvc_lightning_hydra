@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from typing import Union, List, Dict
+import subprocess
 
 import torch
 import lightning as L
@@ -71,11 +72,26 @@ class DogBreedImageDataModule(L.LightningDataModule):
         ])
 
     def prepare_data(self):
-        """Download images if not already present."""
+        """Pull data using DVC if not present, otherwise download from Kaggle."""
         if self.dataset_path.exists() and any(self.dataset_path.iterdir()):
             print(f"Dataset already exists in {self.dataset_path}. Skipping download.")
             return
 
+        # Try to pull data using DVC
+        try:
+            print("Attempting to pull data using DVC...")
+            result = subprocess.run(["dvc", "pull"], check=True, capture_output=True, text=True)
+            print("DVC pull successful. Data retrieved.")
+            return
+        except subprocess.CalledProcessError as e:
+            print(f"DVC pull failed: {e}")
+            print("Error output:", e.stderr)
+        except FileNotFoundError:
+            print("DVC not found. Make sure it's installed and in your PATH.")
+
+        # If DVC pull fails or DVC is not available, fall back to Kaggle download
+        print("Falling back to Kaggle download...")
+        
         # Initialize Kaggle API
         api = KaggleApi()
         api.authenticate()
@@ -130,7 +146,7 @@ class DogBreedImageDataModule(L.LightningDataModule):
 # Example usage
 if __name__ == "__main__":
     datamodule = DogBreedImageDataModule(
-        data_dir="data",  # Default data directory
+        data_dir="data/dogbreed",  # Default data directory
         batch_size=32,
         num_workers=0  # Will be set automatically in the constructor
     )

@@ -1,7 +1,7 @@
 _target_: src.models.timm_classifier.TimmClassifier
 
 # Model parameters
-model_name: resnet50
+model_name: mobilenetv2_100
 num_classes: 10
 pretrained: true
 

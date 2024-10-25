@@ -3,6 +3,7 @@ FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
 
 ENV UV_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy
+ENV COMET_API_KEY=your_comet_ml_api_key
 
 WORKDIR /app
 
@@ -38,3 +39,4 @@ RUN mkdir -p /root/.kaggle && \
 
 # Set the entrypoint
 ENTRYPOINT ["python"]
+

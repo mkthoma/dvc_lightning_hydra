@@ -19,3 +19,6 @@ work_dir: ${hydra:runtime.cwd}
 
 # path to model artifacts directory
 model_artifacts: ${paths.root_dir}/model_artifacts/
+
+# path to comet experiment url file
+comet_experiment_url: ${paths.root_dir}/comet_experiment_url/
