@@ -103,7 +103,7 @@ jobs:
         echo "### Inference Results" >> report.md
         for img in ./model_artifacts/predicted_images/*.jpg; do
           echo "Adding image: $img"  # Debugging line
-          echo "![inline]($img)" >> report.md
+          echo '![Predicted Image]($img)' >> report.md
         done
         cat report.md  # Debugging line to print the report content
         cml comment create report.md
@@ -113,7 +113,7 @@ jobs:
       with:
         name: model-training-artifacts
         path: |
-          ${{ github.workspace }}/logs/plots/metrics_comparison.png
+          ${{ github.workspace }}/logs/plots/plots/metrics_comparison.png
           report.md
         if-no-files-found: error
 
