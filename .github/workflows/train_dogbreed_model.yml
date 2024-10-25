@@ -106,6 +106,9 @@ jobs:
           echo "![Prediction: ](${image})" >> report.md
         done
 
+    - name: Set permissions for predicted_images directory
+      run: sudo chown -R $USER:$USER ${{ github.workspace }}/model_artifacts/predicted_images
+
     - name: Delete untracked files from predicted_images
       run: |
         git clean -fdx model_artifacts/predicted_images
