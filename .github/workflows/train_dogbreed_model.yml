@@ -11,6 +11,10 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   train_model:
     runs-on: ubuntu-latest
